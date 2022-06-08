@@ -1,5 +1,5 @@
 # Done
-X. Select datasets, download them, comment on format, number etc.
+1. Select datasets, download them, comment on format, number etc.
 
 # To Do
 2. Choose model structures, implement and comment on the details
