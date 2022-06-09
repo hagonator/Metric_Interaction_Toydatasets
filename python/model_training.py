@@ -7,27 +7,30 @@ import matplotlib.pyplot as plt
 
 
 def training(model: NeuralNetwork, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
-             accuracy_steps: torch.tensor, learning_rate: float = 1e-3, give_examples: bool = False) -> list:
+             accuracy_steps: torch.tensor, learning_rate: float = 1e-3) -> list:
     learning_rate = torch.optim.SGD(model.parameters(), lr=learning_rate)
     accuracy = loop_test(model, data_test, loss_function)
-    model_versions = [[NeuralNetwork(model.layers), accuracy]]
-    if give_examples:
-        generate_examples(model, data_test.dataset)
+    model_versions = [[NeuralNetwork(model.layers)], [accuracy]]
     epoch_total = 0
 
     for i, threshold in enumerate(accuracy_steps):
         epoch_threshold = 0
         while accuracy < threshold:
+            print("-----------------------------")
+            print(f"Epoch {epoch_total}")
+            print("-----------------------------")
             epoch_total += 1
             epoch_threshold += 1
             loop_train(model, data_train, loss_function, learning_rate)
+            print("-----------------------------")
             accuracy = loop_test(model, data_test, loss_function)
             print(
-                f"Total epochs: {epoch_total:>3d} | Threshold epochs: {epoch_threshold:>3d} | Accuracy: {accuracy:>4f} "
-                f"| Current threshold: {threshold:>4f}\n")
-        model_versions.append([NeuralNetwork(model.layers), accuracy])
-        if give_examples:
-            generate_examples(model, data_test.dataset)
+                f"Total epochs: {epoch_total:>3d} | "
+                f"Threshold epochs:    {epoch_threshold:>3d}\n"
+                f"Accuracy:   {100*accuracy:>0.1f}% | "
+                f"Current threshold: {100*threshold:>0.1f}%\n")
+        model_versions[0].append(NeuralNetwork(model.layers))
+        model_versions[1].append(accuracy)
 
     return model_versions
 
@@ -64,17 +67,3 @@ def loop_test(model: NeuralNetwork, data_test: DataLoader, loss_function: functi
 
     return correct
 
-
-def generate_examples(model: NeuralNetwork, data_examples: DataLoader) -> None:
-    figure = plt.figure(figsize=(10, 30))
-    cols, rows = 4, 10
-    with torch.no_grad():
-        for i in range(1, cols * rows + 1):
-            sample_idx = torch.randint(len(data_examples), size=(1,)).item()
-            img, label = data_examples[sample_idx]
-            prediction = int(model(img).argmax(1))
-            figure.add_subplot(rows, cols, i)
-            plt.title(f"True label: {label}\n Prediction: {prediction}")
-            plt.axis("off")
-            plt.imshow(img.squeeze(), cmap="gray")
-    plt.show()

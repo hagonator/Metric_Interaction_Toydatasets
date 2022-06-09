@@ -23,7 +23,8 @@ MNIST_test = datasets.MNIST(
     transform=ToTensor()
 )
 dataloader_MNIST_train = DataLoader(MNIST_train, batch_size=64)
-dataloader_MNIST_test = DataLoader(MNIST_test, batch_size=64)
+dataloader_MNIST_test = DataLoader(MNIST_test, batch_size=128)
+dataloader_MNIST_examples = DataLoader(MNIST_test, batch_size=40)
 
 """
 The FashionMNIST dataset
@@ -47,4 +48,5 @@ FMNIST_test = datasets.FashionMNIST(
     transform=ToTensor()
 )
 dataloader_FMNIST_train = DataLoader(FMNIST_train, batch_size=64)
-dataloader_FMNIST_test = DataLoader(FMNIST_test, batch_size=64)
+dataloader_FMNIST_test = DataLoader(FMNIST_test, batch_size=128)
+dataloader_FMNIST_examples = DataLoader(FMNIST_test, batch_size=40)
