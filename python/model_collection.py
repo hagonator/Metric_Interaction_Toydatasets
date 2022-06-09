@@ -36,6 +36,7 @@ Simple ReLU network
 three fully connected layers
 """
 layers_simple_relu = nn.Sequential(
+    nn.Flatten(),
     nn.Linear(28 * 28, 2 ** 9),
     nn.ReLU(),
     nn.Linear(2 ** 9, 2 ** 9),
@@ -65,7 +66,7 @@ conv_relu = NeuralNetwork(layers_conv_relu)
 Convolutional ReLU Network with (Information) Dropout
 
 two convolutional layers with max pooling and (Information) dropout and a final fully connected layer
-"""
+
 layers_conv_dropout = nn.Sequential(
     nn.Conv2d(1, 2 ** 4, 5, 1, 2),
     nn.ReLU(),
@@ -79,3 +80,4 @@ layers_conv_dropout = nn.Sequential(
     nn.Linear(32 * 7 * 7, 10)
 )
 conv_dropout = NeuralNetwork(layers_conv_dropout)
+"""
