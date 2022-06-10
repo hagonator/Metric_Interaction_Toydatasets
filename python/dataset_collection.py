@@ -1,9 +1,10 @@
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader
 
 """
 The standard MNIST dataset
-handwritten digits 0-9, grayscale
+Handwritten digits 0-9, grayscale
 
 Instance Format: torch tensor, (28x28,1), float in [0,1]
 Training instances: 60k
@@ -21,10 +22,13 @@ MNIST_test = datasets.MNIST(
     download=True,
     transform=ToTensor()
 )
+dataloader_MNIST_train = DataLoader(MNIST_train, batch_size=64)
+dataloader_MNIST_test = DataLoader(MNIST_test, batch_size=128)
+dataloader_MNIST_examples = DataLoader(MNIST_test, batch_size=9)
 
 """
 The FashionMNIST dataset
-sketches of cloths, 10 classes 0-9, grayscale
+Sketches of cloths, 10 classes 0-9, grayscale
 
 Instance Format: torch tensor, (28x28,1), float in [0,1]
 Training instances: 60k
@@ -43,3 +47,6 @@ FMNIST_test = datasets.FashionMNIST(
     download=True,
     transform=ToTensor()
 )
+dataloader_FMNIST_train = DataLoader(FMNIST_train, batch_size=64)
+dataloader_FMNIST_test = DataLoader(FMNIST_test, batch_size=128)
+dataloader_FMNIST_examples = DataLoader(FMNIST_test, batch_size=9)
