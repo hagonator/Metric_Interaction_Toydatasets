@@ -1,36 +1,33 @@
-import torch
-from model_collection import *
-from torchvision import datasets
-from torch.utils.data import DataLoader
+from copy import deepcopy
+
 from torch.nn import functional
-import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
+
+from model_collection import *
+
+"""
+Training procedure saving all intermediate versions (in between training loops) of the model.
+Functions for a single training loop / a single test loop are outsourced in separate functions
+"""
 
 
 def training(model: NeuralNetwork, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
-             accuracy_steps: torch.tensor, learning_rate: float = 1e-3) -> list:
-    learning_rate = torch.optim.SGD(model.parameters(), lr=learning_rate)
+             goal_accuracy: float, learning_rate: float = 1e-3) -> dict:
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
     accuracy = loop_test(model, data_test, loss_function)
-    model_versions = [[NeuralNetwork(model.layers)], [accuracy]]
-    epoch_total = 0
+    epoch = 0
+    model_versions = dict()
 
-    for i, threshold in enumerate(accuracy_steps):
-        epoch_threshold = 0
-        while accuracy < threshold:
-            print("-----------------------------")
-            print(f"Epoch {epoch_total}")
-            print("-----------------------------")
-            epoch_total += 1
-            epoch_threshold += 1
-            loop_train(model, data_train, loss_function, learning_rate)
-            print("-----------------------------")
-            accuracy = loop_test(model, data_test, loss_function)
-            print(
-                f"Total epochs: {epoch_total:>3d} | "
-                f"Threshold epochs:    {epoch_threshold:>3d}\n"
-                f"Accuracy:   {100*accuracy:>0.1f}% | "
-                f"Current threshold: {100*threshold:>0.1f}%\n")
-        model_versions[0].append(NeuralNetwork(model.layers))
-        model_versions[1].append(accuracy)
+    print("-----------------------------------")
+    while accuracy < goal_accuracy:
+        model_versions[epoch] = [deepcopy(model.state_dict()), accuracy]
+        print(f"Epoch {epoch:>3d} | Starting Accuracy {100*accuracy:>4.1f}%")
+        print("-----------------------------------")
+        epoch += 1
+        loop_train(model, data_train, loss_function, optimizer)
+        print("-----------------------------------")
+        accuracy = loop_test(model, data_test, loss_function)
+    print(f"Epochs {epoch:>3d} | Final Accuracy {100*accuracy:>4.1f}%")
 
     return model_versions
 
@@ -47,23 +44,19 @@ def loop_train(model: NeuralNetwork, data_train: DataLoader, loss_function: func
 
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)
-            print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
+            print(f"   loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
 
 
 def loop_test(model: NeuralNetwork, data_test: DataLoader, loss_function: functional) -> float:
     size = len(data_test.dataset)
-    number_batches = len(data_test)
-    loss_test, correct = 0, 0
+    correct = 0
 
     with torch.no_grad():
         for X, y in data_test:
             prediction = model(X)
-            loss_test += loss_function(prediction, y).item()
             correct += (prediction.argmax(1) == y).type(torch.float).sum().item()
 
-    loss_test /= number_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {loss_test:>8f} \n")
 
     return correct
 
