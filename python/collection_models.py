@@ -21,7 +21,18 @@ class NeuralNetwork(nn.Module):
 
 
 """
-Simple ReLU network
+Auxiliary Linear Network 
+
+One fully connected layer without activation function
+"""
+layers_auxiliary_linear = nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28 * 28, 10)
+)
+auxiliary_linear = NeuralNetwork(layers_auxiliary_linear)
+
+"""
+Simple ReLU Network
 
 Three fully connected layers
 """
