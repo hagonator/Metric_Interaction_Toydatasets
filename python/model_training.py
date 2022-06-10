@@ -3,7 +3,7 @@ from copy import deepcopy
 from torch.nn import functional
 from torch.utils.data import DataLoader
 
-from model_collection import *
+from collection_models import *
 
 """
 Training procedure saving all intermediate versions (in between training loops) of the model.

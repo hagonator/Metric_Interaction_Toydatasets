@@ -1,6 +1,6 @@
-from dataset_collection import *
+from collection_datasets import *
 from model_training import *
-from loss_function_collection import *
+from collection_loss_functions import *
 
 import matplotlib.pyplot as plt
 
