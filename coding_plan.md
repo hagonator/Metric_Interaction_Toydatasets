@@ -1,10 +1,10 @@
 # Done
 1. Select datasets, download them, comment on format, number etc.
+2. Choose model structures, implement and comment on the details
+3. Implement the training of the models including the ~~accuracy step~~ version saving, comment on the details
+	- Optimize the saving, model versions should not always have to be trained from scratch
 
 # To Do
-2. Choose model structures, implement and comment on the details
-3. Implement the training of the models including the accuracy step version saving, comment on the details
-	- Optimize the saving, model versions should not alway be trained from scratch
 4. Select explanation methods, implement them and comment on the details (how to use, prerequisites for usage, etc.)
 5. Select evaluation methods, implement (if necessary, look into how to use the quantus library: https://github.com/understandable-machine-intelligence-lab/Quantus) and again comment on the details
 6. If necessary, adjust the modeltraining such that ideally all explanation methods and evaluation metrics can be applied
