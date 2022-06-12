@@ -26,6 +26,7 @@ dataloader_MNIST_train = DataLoader(MNIST_train, batch_size=64)
 dataloader_MNIST_test = DataLoader(MNIST_test, batch_size=128)
 dataloader_MNIST_examples = DataLoader(MNIST_test, batch_size=9)
 
+
 """
 The FashionMNIST dataset
 Sketches of cloths, 10 classes 0-9, grayscale

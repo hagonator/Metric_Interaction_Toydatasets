@@ -12,16 +12,16 @@ goal_accuracy = .8
 # torch.save(training(simple_relu, dataloader_MNIST_train, dataloader_MNIST_test, cross_entropy, goal_accuracy,
 #                    learning_rate=1e-4), 'trained_simple_relu.pt')
 
-# torch.save(training(conv_relu, dataloader_FMNIST_train, dataloader_FMNIST_test, cross_entropy, goal_accuracy),
-#           'trained_conv_relu.pt')
+# torch.save(training(conv_relu, dataloader_FMNIST_train, dataloader_FMNIST_test, cross_entropy, goal_accuracy,
+#                    learning_rate=1e-3), 'trained_conv_relu.pt')
 
 """
 Print for a fixed sample set the predictions of every fifth version of the model.
 """
-models = torch.load('trained_simple_relu.pt')
-model = NeuralNetwork(layers_simple_relu)
+models = torch.load('trained_conv_relu.pt')
+model = NeuralNetwork(layers_conv_relu)
 N = len(models)
-data_examples_images, data_examples_labels = list(dataloader_MNIST_examples)[0]
+data_examples_images, data_examples_labels = list(dataloader_FMNIST_examples)[0]
 for number_model in range(N):
     if number_model % 5 == 0:
         model.load_state_dict(models[number_model][0])
@@ -29,12 +29,11 @@ for number_model in range(N):
         figure = plt.figure(figsize=(10, 10))
         cols, rows = 3, 3
         with torch.no_grad():
+            predictions = model(data_examples_images).argmax(axis=1)
             for i in range(1, cols * rows + 1):
-                img, label = data_examples_images[i - 1], data_examples_labels[i - 1]
-                prediction = model(img).argmax(1)
                 figure.add_subplot(rows, cols, i)
-                plt.title(f"True label: {label}\n Prediction: {prediction}")
+                plt.title(f"True label: {data_examples_labels[i-1]}\n Prediction: {predictions[i-1]}")
                 plt.axis("off")
-                plt.imshow(img.squeeze(), cmap="gray")
+                plt.imshow(data_examples_images[i-1].squeeze(), cmap="gray")
             print(accuracy)
-        plt.show()
+            plt.show()

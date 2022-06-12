@@ -13,6 +13,7 @@ Functions for a single training loop / a single test loop are outsourced in sepa
 
 def training(model: NeuralNetwork, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
              goal_accuracy: float, learning_rate: float = 1e-3) -> dict:
+
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
     accuracy = loop_test(model, data_test, loss_function)
     epoch = 0
@@ -33,6 +34,7 @@ def training(model: NeuralNetwork, data_train: DataLoader, data_test: DataLoader
 
 
 def loop_train(model: NeuralNetwork, data_train: DataLoader, loss_function: functional, optimizer) -> None:
+
     size = len(data_train.dataset)
 
     for batch, (X, y) in enumerate(data_train):
@@ -48,6 +50,7 @@ def loop_train(model: NeuralNetwork, data_train: DataLoader, loss_function: func
 
 
 def loop_test(model: NeuralNetwork, data_test: DataLoader, loss_function: functional) -> float:
+
     size = len(data_test.dataset)
     correct = 0
 
