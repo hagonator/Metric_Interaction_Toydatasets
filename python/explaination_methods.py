@@ -1,6 +1,7 @@
 import torch
 
 from collection_models import *
+from model_to_explanations_simple import *
 from collection_datasets import *
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -28,7 +29,7 @@ have a close look at each and every method, check compatibility
 """
 
 
-def explain(model: NeuralNetwork, data_explain: torch.tensor) -> dict:
+def explain(model: NeuralNetwork or SimpleNet, data_explain: torch.tensor) -> dict:
     explanations = {
         'Integrated Gradient': None,
         'Smoothed Integrated Gradient': None,

@@ -4,6 +4,7 @@ from torch.nn import functional
 from torch.utils.data import DataLoader
 
 from collection_models import *
+from model_to_explanations_simple import *
 
 """
 Training procedure saving all intermediate versions (in between training loops) of the model.
@@ -11,7 +12,7 @@ Functions for a single training loop / a single test loop are outsourced in sepa
 """
 
 
-def training(model: NeuralNetwork, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
+def training(model: NeuralNetwork or SimpleNet, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
              goal_accuracy: float, learning_rate: float = 1e-3) -> dict:
 
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
