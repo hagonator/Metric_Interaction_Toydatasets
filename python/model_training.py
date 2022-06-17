@@ -4,7 +4,7 @@ from torch.nn import functional
 from torch.utils.data import DataLoader
 
 from collection_models import *
-from model_to_explanations_simple import *
+# from model_to_explanations_simple import *
 
 """
 Training procedure saving all intermediate versions (in between training loops) of the model.
@@ -13,16 +13,16 @@ Functions for a single training loop / a single test loop are outsourced in sepa
 
 
 def training(model: NeuralNetwork or SimpleNet, data_train: DataLoader, data_test: DataLoader, loss_function: functional,
-             goal_accuracy: float, learning_rate: float = 1e-3) -> dict:
+             goal_accuracy: float, learning_rate: float = 1e-3) -> list:
 
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
     accuracy = loop_test(model, data_test, loss_function)
     epoch = 0
-    model_versions = dict()
+    model_versions = []
 
     print("-----------------------------------")
     while accuracy < goal_accuracy:
-        model_versions[epoch] = [deepcopy(model.state_dict()), accuracy]
+        model_versions.append([deepcopy(model.state_dict()), accuracy])
         print(f"Epoch {epoch:>3d} | Starting Accuracy {100*accuracy:>4.1f}%")
         print("-----------------------------------")
         epoch += 1
@@ -45,7 +45,7 @@ def loop_train(model: NeuralNetwork, data_train: DataLoader, loss_function: func
         loss.backward()
         optimizer.step()
 
-        if batch % 100 == 0:
+        if (batch + 1) % 100 == 0:
             loss, current = loss.item(), batch * len(X)
             print(f"   loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
 

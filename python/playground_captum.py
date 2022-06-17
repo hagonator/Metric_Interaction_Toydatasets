@@ -118,12 +118,13 @@ Generate explanations for a single image under all model versions
 model = NeuralNetwork(layers_simple_relu)
 data_explain = iter(DataLoader(MNIST_test, batch_size=2)).next()
 model_versions = torch.load('trained_simple_relu.pt')
+n = len(model_versions)
 
 accuracy = 0
 for number_model in model_versions:
     if accuracy + .01 <= model_versions[number_model][1]:
-        accuracy = model_versions[number_model][1]
-        model.load_state_dict(model_versions[number_model][0])
+        accuracy = model_versions[n-1][1]
+        model.load_state_dict(model_versions[n-1][0])
         explanations = explain(model, data_explain)
         n = len(explanations)
         figure = plt.figure(figsize=(4 * n + 1, 8))

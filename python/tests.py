@@ -9,8 +9,8 @@ Generate and save model versions.
 """
 goal_accuracy = .8
 
-# torch.save(training(simple_relu, dataloader_MNIST_train, dataloader_MNIST_test, cross_entropy, goal_accuracy,
-#                    learning_rate=1e-4), 'trained_simple_relu.pt')
+torch.save(training(simple_relu, dataloader_MNIST_train, dataloader_MNIST_test, cross_entropy, goal_accuracy,
+                    learning_rate=1e-4), 'trained_simple_relu.pt')
 
 # torch.save(training(conv_relu, dataloader_FMNIST_train, dataloader_FMNIST_test, cross_entropy, goal_accuracy,
 #                    learning_rate=1e-3), 'trained_conv_relu.pt')

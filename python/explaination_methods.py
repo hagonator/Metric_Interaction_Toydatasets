@@ -1,7 +1,7 @@
 import torch
 
 from collection_models import *
-from model_to_explanations_simple import *
+# from model_to_explanations_simple import *
 from collection_datasets import *
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -28,9 +28,12 @@ explanation methods (most of the primary attribution methods implemented by capt
 have a close look at each and every method, check compatibility
 """
 
+def my_explain(model: nn.Module, data_explain: torch.tensor) -> dict:
+    return explain(model, data_explain)
 
-def explain(model: NeuralNetwork or SimpleNet, data_explain: torch.tensor) -> dict:
+def explain(model: nn.Module, data_explain: torch.tensor) -> dict:
     explanations = {
+        'Originals': data_explain.cpu().numpy(),
         'Integrated Gradient': None,
         'Smoothed Integrated Gradient': None,
         'Gradient SHAP': None,
@@ -39,7 +42,7 @@ def explain(model: NeuralNetwork or SimpleNet, data_explain: torch.tensor) -> di
         'Saliency': None,
         'Guided Backpropagation': None,
         'Deconvolution': None,
-        'Layer-wise Relevance Propagation': None,
+        # 'Layer-wise Relevance Propagation': None, # fix problem with the flatten-module
         # 'Guided GradCAM': None, # implement differentiation between 'conv' and 'simple' to use this
         'Feature Ablation': None,
         'Occlusion': None,
@@ -79,8 +82,8 @@ def explain(model: NeuralNetwork or SimpleNet, data_explain: torch.tensor) -> di
     explanations_dc = attr.Deconvolution(model).attribute(inputs=images, target=labels)
     explanations['Deconvolution'] = explanations_dc.sum(axis=1).cpu().numpy()
 
-    explanations_lrp = attr.LRP(model).attribute(inputs=images, target=labels)
-    explanations['Guided Backpropagation'] = explanations_lrp.sum(axis=1).cpu().numpy()
+    # explanations_lrp = attr.LRP(model).attribute(inputs=images, target=labels)
+    # explanations['Guided Backpropagation'] = explanations_lrp.sum(axis=1).cpu().numpy()
 
     # CNN only
     # explanations_ggc = attr.GuidedGradCam(model, layer=None).attribute(inputs=images, target=labels)
