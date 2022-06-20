@@ -4,8 +4,8 @@ from captum import attr
 from torch import nn
 import torch
 
-from model_classes import SimpleNet, ConvolutionalNet
-from utils import initialize, generate, update_checkpoint
+from model_classes_v2 import SimpleNet, ConvolutionalNet
+from utils import initialize, generate
 
 table_model_architectures = [
     [SimpleNet, 'Simple ReLU', 'a fully connected ReLU Network with two hidden layers'],
@@ -18,10 +18,10 @@ table_explanation_methods = [
     [attr.FeatureAblation, 'Feature Ablation', {}, {}],
     [attr.GradientShap, 'Gradient SHAP', {'multiply_by_inputs': False}, {'baselines': torch.zeros([1, 1, 28, 28])}],
     [attr.GuidedBackprop, 'Guided Backpropagation', {}, {}],
-    [attr.GuidedGradCam, 'Guided GradCAM', {'layer': None}, {}],    # does not work for simple ReLU
+    [attr.GuidedGradCam, 'Guided GradCAM', {'layer': None}, {}],
     [attr.InputXGradient, 'Input X Gradient', {}, {}],
     [attr.IntegratedGradients, 'Integrated Gradient', {'multiply_by_inputs': False}, {}],
-    [attr.LRP, 'Layer-wise Relevance Propagation', {}, {}],   # rule for flatten!
+    [attr.LRP, 'Layer-wise Relevance Propagation', {}, {}],   # rule for flatten! (should be handled like the identity?)
     [attr.Occlusion, 'Occlusion', {}, {'sliding_window_shapes': (1, 1, 1)}],
     [attr.Saliency, 'Saliency', {}, {}],
     [attr.ShapleyValueSampling, 'Shapley Value Sampling', {}, {}],
@@ -44,6 +44,7 @@ table_datasets = [
     [torchvision.datasets.FashionMNIST, 'FashionMNIST', 'Labeled sketches of fashion items'],
 ]
 
+# maybe check this when actually computing something and don't hardcode it into the save file
 if torch.cuda.is_available():
     print('Using GPU')
     device = 'cuda'
@@ -86,3 +87,7 @@ path = 'test.pt'
 #    evaluation_metrics=table_evaluation_metrics
 # )
 generate(path)
+#
+# t, check = torch.load(path)
+# print(check)
+# torch.save([t, ['explaining', [1, 1, 8, 0]]], path)

@@ -19,6 +19,21 @@ def training(
         patience: int,
         device: str
 ) -> list:
+    """
+    train a model using SGD, saving all intermediate versions exceeding the next full percent of test accuracy
+
+    :param model: some Neural Network, usually randomly initialized
+    :param dataset: a torchvision dataset, fitting the Neural Networks expected input
+    :param batch_size_training: size of training batches
+    :param batch_size_testing: size of test batches
+    :param loss_function: the penalizing loss function, usually cross entropy
+    :param goal_accuracy: the maximal test accuracy at which to stop the training procedure
+    :param learning_rate: the learning rate for the SGD
+    :param patience: the maximal number of SGD iterations for exceeding the next full percent of test accuracy
+    :param device: the device to perform the computations on (cuda or cpu)
+
+    :return: list containing all saved intermediate versions and their test accuracy
+    """
 
     model.to(device)
 
@@ -72,25 +87,48 @@ def loop_train(
         loss_function: functional,
         optimizer
 ) -> None:
+    """
+    a sequence of SGD iterations over the whole training set
+
+    :param model: the Neural Network to be trained
+    :param dataloader_training: dataloader from the dataset to be trained on with predefined batch size
+    :param loss_function: the penalizing loss function, usually cross entropy
+    :param optimizer: the optimizer for the SGD
+
+    :return: nothing
+    """
 
     size = len(dataloader_training.dataset)
 
     for batch, (X, y) in enumerate(dataloader_training):
+
+        # SGD
         prediction = model(X)
         loss = loss_function(prediction, y)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+        # annotation
         if (batch + 1) % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
             print(f"           loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
+
+    return
 
 
 def loop_test(
         model: nn.Module,
         dataloader_testing: DataLoader
 ) -> float:
+    """
+    a test on a subset of the dataset to approximate the generalization error
+
+    :param model: the Neural Network to approximate the generalization error for
+    :param dataloader_testing: dataloader for the corresponding dataset with predefined batch size
+
+    :return: test accuracy
+    """
 
     size = len(dataloader_testing.dataset)
     correct = 0

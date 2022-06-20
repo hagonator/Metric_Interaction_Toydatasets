@@ -3,6 +3,10 @@ from torch import nn
 
 
 class SimpleNet(nn.Module):
+    """
+    a simple completely connected neural network with ReLU activation functions
+    three linear layers
+    """
 
     def __init__(self) -> None:
         super(SimpleNet, self).__init__()
@@ -20,12 +24,16 @@ class SimpleNet(nn.Module):
 
         return output
 
-    def get_layer(self) -> nn.Module:
+    def get_layer(self) -> None:
 
-        return self.linear1
+        return None
 
 
 class ConvolutionalNet(nn.Module):
+    """
+    a convolutional neural network with ReLU activation functions
+    two convolutional layers with maxpooling and a final fully connected layer
+    """
 
     def __init__(self) -> None:
         super(ConvolutionalNet, self).__init__()
