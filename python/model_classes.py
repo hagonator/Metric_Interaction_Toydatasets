@@ -20,6 +20,10 @@ class SimpleNet(nn.Module):
 
         return output
 
+    def get_layer(self) -> nn.Module:
+
+        return self.linear1
+
 
 class ConvolutionalNet(nn.Module):
 
@@ -41,3 +45,7 @@ class ConvolutionalNet(nn.Module):
         output = self.linear1(self.flatten(convolution))
 
         return output
+
+    def get_layer(self) -> nn.Module:
+
+        return self.convolution2

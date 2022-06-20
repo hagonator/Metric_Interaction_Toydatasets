@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 
-from model_training_v2 import training
+from model_training import training
 
 
 def make_model(
@@ -13,26 +13,10 @@ def make_model(
         version: int
 ) -> nn.Module:
 
-    model = the_tabulatorium[1][architecture]
+    model = the_tabulatorium[1][architecture][0]()
     model.load_state_dict(the_tabulatorium[5][architecture][dataset][version][0])
 
     return model
-
-
-def make_explanation_method(
-        the_tabulatorium: list,
-        model: nn.Module,
-        explanation_method: int
-):
-
-    if the_tabulatorium[3][explanation_method][2] == 'multiply_by_input':
-        explanation_method = the_tabulatorium[3][explanation_method][0](model, multiply_by_input=False)
-    elif the_tabulatorium[3][explanation_method][2] == 'layer':
-        explanation_method = the_tabulatorium[3][explanation_method][0](model, layer=model.layer)
-    else:
-        explanation_method = the_tabulatorium[3][explanation_method][0](model)
-
-    return explanation_method
 
 
 def update_checkpoint(
@@ -40,15 +24,14 @@ def update_checkpoint(
         phase: str,
         location: list
 ) -> list:
-
     if phase == 'training':
         architecture, dataset = location
         if dataset < len(the_tabulatorium[2]) - 1:
-            checkpoint = ['training', [dataset, architecture + 1]]
+            checkpoint = ['training', [architecture, dataset + 1]]
         elif architecture < len(the_tabulatorium[1]) - 1:
             checkpoint = ['training', [architecture + 1, 0]]
         else:
-            checkpoint = ['explaining', [0, 0, 0]]
+            checkpoint = ['explaining', [0, 0, 0, 0]]
     elif phase == 'explaining':
         architecture, dataset, explanation_method, version = location
         if version < len(the_tabulatorium[5][architecture][dataset]) - 1:
@@ -74,7 +57,9 @@ def update_checkpoint(
         elif architecture < len(the_tabulatorium[1]) - 1:
             checkpoint = ['evaluation', [architecture + 1, 0, 0, 0, 0]]
         else:
-            checkpoint = ['done']
+            checkpoint = ['done', []]
+    else:
+        checkpoint = ['done', []]
 
     return checkpoint
 
@@ -84,13 +69,15 @@ def train(
         location: list
 ) -> list:
 
-    hyperparameters = the_tabulatorium[0][0]
+    hyperparameters = the_tabulatorium[0][1]
     architecture, dataset = location
-    print(f'Train {the_tabulatorium[1][architecture][1]} on the {the_tabulatorium[2][dataset][1]} dataset.')
+    print(f'Training | '
+          f'Architecture: {the_tabulatorium[1][architecture][1]} | '
+          f'Dataset: {the_tabulatorium[2][dataset][1]}')
 
     # Train.
     intermediate_versions = training(
-        model=the_tabulatorium[1][architecture][0],
+        model=the_tabulatorium[1][architecture][0](),
         dataset=the_tabulatorium[2][dataset][0],
         **hyperparameters
     )
@@ -113,29 +100,34 @@ def explain(
         location: list
 ) -> list:
 
-    hyperparameters = the_tabulatorium[0][1]
+    hyperparameters = the_tabulatorium[0][2]
+
     architecture, dataset, explanation_method, version = location
+    print(f'Explaining | '
+          f'Explanation Method: {the_tabulatorium[3][explanation_method][1]} | '
+          f'Architecture: {the_tabulatorium[1][architecture][1]} Network | '
+          f'Dataset:  {the_tabulatorium[2][dataset][1]} | '
+          f'Accuracy: {the_tabulatorium[5][architecture][dataset][version][1] * 100:>4.1f}%')
 
     # Set the model.
     model = make_model(the_tabulatorium, architecture, dataset, version)
 
     # Set the explanation method.
-    explanation_method = make_explanation_method(the_tabulatorium, model, explanation_method)
+    arguments_method_specific = the_tabulatorium[3][explanation_method][2]
+    if 'layer' in arguments_method_specific:
+        arguments_method_specific['layer'] = model.get_layer()  # fix for the Guided GradCAM method
+    method = the_tabulatorium[3][explanation_method][0](model, **arguments_method_specific)
+    if 'layer' in arguments_method_specific:
+        arguments_method_specific['layer'] = None
 
     # Set images and labels for explanation.
-    images, labels = iter(DataLoader(
-        dataset=the_tabulatorium[2][dataset](
-            root='data',
-            train=False,
-            download=False,
-            transform=ToTensor()
-        ),
-        **hyperparameters
-    )).next()
+    images, labels = the_tabulatorium[2][dataset][3]
 
     # Explain.
-    explanations = explanation_method.attribute(inputs=images, targets=labels)
-    the_tabulatorium[6][architecture][dataset][explanation_method][version] = explanations.sum(axis=1).cpu().numpy()
+    arguments_method_specific = the_tabulatorium[3][explanation_method][3]
+    explanations = method.attribute(inputs=images, target=labels, **arguments_method_specific)
+    the_tabulatorium[6][architecture][dataset][explanation_method][version] = \
+        explanations.sum(axis=1).cpu().detach().numpy()
 
     # Update checkpoint.
     checkpoint = update_checkpoint(the_tabulatorium, 'explaining', location)
@@ -148,11 +140,18 @@ def evaluate(
         location: list,
 ) -> list:
 
-    hyperparameters = the_tabulatorium[0][2]
+    hyperparameters = the_tabulatorium[0][3]
     architecture, dataset, explanation_method, metric, version = location
+    print(f'Explaining | '
+          f'Metric: {the_tabulatorium[4][metric][1]} | '
+          f'Explanation Method: {the_tabulatorium[3][explanation_method][1]}'
+          f'Architecture: {the_tabulatorium[1][architecture][1]} Network | '
+          f'Dataset:  {the_tabulatorium[2][dataset][1]} | '
+          f'Accuracy: {the_tabulatorium[5][architecture][dataset][version][1] * 100:>4.1f}%')
 
     # Set the model.
     model = make_model(the_tabulatorium, architecture, dataset, version)
+    model.eval()
 
     # Get images and labels for explanation.
     images, labels = the_tabulatorium[2][dataset][3]
@@ -185,9 +184,10 @@ def generate(
         'evaluating': evaluate
     }
 
-    while not checkpoint == 'done':
+    while not checkpoint[0] == 'done':
         checkpoint = utilities[checkpoint[0]](the_tabulatorium, checkpoint[1])
         torch.save([the_tabulatorium, checkpoint], path)
+    print('done')
 
     return
 
@@ -209,12 +209,14 @@ def initialize(
                 download=True,
                 transform=ToTensor()
             ),
-            **hyperparameters[1]
+            **hyperparameters[0]
         )).next()
         dataset.append(dataset_explain)
     versions = [[None for _ in range(len(architectures))] for _ in range(len(datasets))]
-    explanations = [[[None for _ in range(len(explanation_methods))] for _ in range(len(architectures))] for _ in range(len(datasets))]
-    evaluations = [[[[None for _ in range(len(evaluation_metrics))] for _ in range(len(explanation_methods))] for _ in range(len(architectures))] for _ in range(len(datasets))]
+    explanations = [[[None for _ in range(len(explanation_methods))] for _ in range(len(architectures))]
+                    for _ in range(len(datasets))]
+    evaluations = [[[[None for _ in range(len(evaluation_metrics))] for _ in range(len(explanation_methods))]
+                    for _ in range(len(architectures))] for _ in range(len(datasets))]
 
     the_tabulatorium = [
         hyperparameters,
