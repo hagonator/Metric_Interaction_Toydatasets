@@ -230,9 +230,9 @@ def evaluate(
     """ check what exactly to put here! """
     scores = the_tabulatorium[4][metric][0](**hyperparameters)(
         model=model,
-        x_batch=images,
-        y_batch=labels,
-        a_batch=the_tabulatorium[6][architecture][dataset][explanation_method][metric]
+        x_batch=images.detach().numpy(),
+        y_batch=labels.detach().numpy(),
+        a_batch=the_tabulatorium[6][architecture][dataset][explanation_method][version]
     )
     the_tabulatorium[7][architecture][dataset][explanation_method][metric][version] = scores
 
