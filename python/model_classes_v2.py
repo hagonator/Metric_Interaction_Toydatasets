@@ -3,6 +3,15 @@ from torch import nn
 from captum.attr._utils.lrp_rules import EpsilonRule
 
 
+class IdentityRuleUnflatten(EpsilonRule):
+
+    def _create_backward_hook_input(self, inputs):
+        def _backward_hook_input(grad):
+            return nn.Unflatten(1, self.shape)(self.relevance_output[grad.device])
+
+        return _backward_hook_input
+
+
 class SimpleNet(nn.Module):
     """
     a simple completely connected neural network with ReLU activation functions
@@ -62,12 +71,3 @@ class ConvolutionalNet(nn.Module):
 
     def get_layer(self) -> nn.Module:
         return self.convolution2
-
-
-class IdentityRuleUnflatten(EpsilonRule):
-
-    def _create_backward_hook_input(self, inputs):
-        def _backward_hook_input(grad):
-            return nn.Unflatten(1, self.shape)(self.relevance_output[grad.device])
-
-        return _backward_hook_input
