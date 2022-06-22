@@ -24,10 +24,7 @@ def initialize(
             [model architecture][dataset][intermediate version]
                 [0]: the models state dictionary (OrderedDict)
                 [1]: accuracy of the intermediate versions (float)
-        [5]: explanations
-            [model architecture][dataset][explanation method][intermediate version]
-                [0]: explanations for a set of fixed inputs (numpy.array)
-        [6]: evaluations
+        [5]: evaluations
             [model architecture][dataset][explanation method][evaluation metric][intermediate version]
                 [0]: evaluation for the generated explanations
 
@@ -91,7 +88,6 @@ def generate(
 
     utilities = {
         'training': train,
-        'explaining': explain,
         'evaluating': evaluate
     }
 
@@ -243,7 +239,7 @@ def update_checkpoint(
     given the task that was finished, generate the next tasks coordinates
 
     :param the_tabulatorium: table containing all relevant information
-    :param phase: current phase (training, explaining, evaluating)
+    :param phase: current phase (training, evaluating)
     :param location: coordinates of the finished task
 
     :return: list containing the new task:
