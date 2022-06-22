@@ -17,7 +17,6 @@ def training(
         goal_accuracy: float,
         learning_rate: float,
         patience: int,
-        device: str
 ) -> list:
     """
     train a model using SGD, saving all intermediate versions exceeding the next full percent of test accuracy
@@ -30,12 +29,17 @@ def training(
     :param goal_accuracy: the maximal test accuracy at which to stop the training procedure
     :param learning_rate: the learning rate for the SGD
     :param patience: the maximal number of SGD iterations for exceeding the next full percent of test accuracy
-    :param device: the device to perform the computations on (cuda or cpu)
 
     :return: list containing all saved intermediate versions and their test accuracy
     """
 
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
     model.to(device)
+
+    loss_function = loss_function()
 
     dataloader_training = DataLoader(
         dataset=dataset(
