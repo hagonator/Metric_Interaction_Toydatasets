@@ -32,33 +32,31 @@ table_datasets = [
 ]
 
 table_explanation_methods = [
-    [attr.Deconvolution, 'Deconvolution',
-     {}, {}],
-    [attr.FeatureAblation, 'Feature Ablation',
-     {}, {}],
-    [attr.GradientShap, 'Gradient SHAP',
-     {'multiply_by_inputs': False}, {'baselines': torch.zeros([1, 1, 28, 28])}],
-    [attr.GuidedBackprop, 'Guided Backpropagation',
-     {}, {}],
-    [attr.GuidedGradCam, 'Guided GradCAM',
-     {'layer': None}, {}],
-    [attr.InputXGradient, 'Input X Gradient',
-     {}, {}],
-    [attr.IntegratedGradients, 'Integrated Gradient',
-     {'multiply_by_inputs': False}, {}],
-    [attr.LRP, 'Layer-wise Relevance Propagation',
-     {}, {}],  # rule for flatten! (should be handled like the identity?)
-    [attr.Occlusion, 'Occlusion',
-     {}, {'sliding_window_shapes': (1, 1, 1)}],
-    [attr.Saliency, 'Saliency',
-     {}, {}],
-    [attr.ShapleyValueSampling, 'Shapley Value Sampling',
-     {}, {}],
+    ['GradientShap'],
+    ['IntegratedGradients'],
+    ['InputXGradient'],
+    ['Saliency'],
+    ['FeatureAblation'],
+    ['GradCam']
 ]
 
+evaluation_presets = {
+    'display_progressbar': True
+}
+
 table_evaluation_metrics = [
-    [quantus.AvgSensitivity, 'Average Sensitivity', 'Robustness', {}],
-    [quantus.Infidelity, 'Infidelity', 'Faithfulness', {}],
-    [quantus.EffectiveComplexity, 'Effective Complexity', 'Complexity', {}],
-    [quantus.ModelParameterRandomisation, 'Model Parameter Randomisation', 'Randomisation', {}]
+    [quantus.AvgSensitivity, 'Average Sensitivity, sample size=200', 'Robustness',
+     {**evaluation_presets, 'nr_samples': 200}],
+    [quantus.AvgSensitivity, 'Average Sensitivity, sample size=100', 'Robustness',
+     {**evaluation_presets, 'nr_samples': 100}],
+    [quantus.Infidelity, 'Infidelity', 'Faithfulness', evaluation_presets],
+    [quantus.EffectiveComplexity, 'Effective Complexity, epsilon=1e-5', 'Complexity',
+     {**evaluation_presets, 'eps': 1e-5}],
+    [quantus.EffectiveComplexity, 'Effective Complexity, epsilon=1e-4', 'Complexity',
+     {**evaluation_presets, 'eps': 1e-4}],
+    [quantus.EffectiveComplexity, 'Effective Complexity, epsilon=1e-3', 'Complexity',
+     {**evaluation_presets, 'eps': 1e-3}],
+    [quantus.EffectiveComplexity, 'Effective Complexity, epsilon=1e-2', 'Complexity',
+     {**evaluation_presets, 'eps': 1e-2}],
+    [quantus.RandomLogit, 'Random Logit', 'Randomisation', evaluation_presets]
 ]

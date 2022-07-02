@@ -70,4 +70,4 @@ class ConvolutionalNet(nn.Module):
         return output
 
     def get_layer(self) -> nn.Module:
-        return self.convolution2
+        return self.convolution1

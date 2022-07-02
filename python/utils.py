@@ -1,5 +1,10 @@
+import quantus
 import torch
 from torch import nn
+from torch.utils.data import DataLoader
+from torchvision.transforms import ToTensor
+import numpy
+from captum import attr
 
 from model_training import training
 
@@ -50,11 +55,9 @@ def initialize(
     :return: nothing
     """
 
-    versions = [[None for _ in range(len(architectures))] for _ in range(len(datasets))]
-    explanations = [[[None for _ in range(len(explanation_methods))] for _ in range(len(architectures))]
-                    for _ in range(len(datasets))]
+    versions = [[None for _ in range(len(datasets))] for _ in range(len(architectures))]
     evaluations = [[[[None for _ in range(len(evaluation_metrics))] for _ in range(len(explanation_methods))]
-                    for _ in range(len(architectures))] for _ in range(len(datasets))]
+                    for _ in range(len(datasets))] for _ in range(len(architectures))]
 
     the_tabulatorium = [
         architectures,
@@ -62,7 +65,6 @@ def initialize(
         explanation_methods,
         evaluation_metrics,
         versions,
-        explanations,
         evaluations
     ]
     checkpoint = ['training', [0, 0]]
@@ -133,9 +135,8 @@ def train(
     number_versions = len(intermediate_versions)
     the_tabulatorium[4][architecture][dataset] = intermediate_versions
     for explanation_method in range(len(the_tabulatorium[2])):
-        the_tabulatorium[5][architecture][dataset][explanation_method] = [None for _ in range(number_versions)]
         for metric in range(len(the_tabulatorium[3])):
-            the_tabulatorium[6][architecture][dataset][explanation_method][metric] = \
+            the_tabulatorium[5][architecture][dataset][explanation_method][metric] = \
                 [None for _ in range(number_versions)]
 
     # update checkpoint
@@ -169,7 +170,7 @@ def evaluate(
     # annotation
     print(f'Explaining | '
           f'Metric: {the_tabulatorium[3][metric][1]} | '
-          f'Explanation Method: {the_tabulatorium[2][explanation_method][1]}'
+          f'Explanation Method: {the_tabulatorium[2][explanation_method][0]} | '
           f'Architecture: {the_tabulatorium[0][architecture][1]} Network | '
           f'Dataset:  {the_tabulatorium[1][dataset][1]} | '
           f'Accuracy: {the_tabulatorium[4][architecture][dataset][version][1] * 100:>4.1f}%')
@@ -183,23 +184,38 @@ def evaluate(
     model.to(device)
     model.eval()
 
-    # get images and labels used for explanation
-    images, labels = the_tabulatorium[1][dataset][3]
+    # get images and labels used for explaining
+    dataloader_evaluate = DataLoader(
+        the_tabulatorium[1][dataset][0](
+            root='data',
+            train=False,
+            download=True,
+            transform=ToTensor()
+        ),
+        batch_size=10,
+        shuffle=False
+    )
+    images, labels = iter(dataloader_evaluate).next()
 
     # set explanation method
-    explanation_hyperparameters = the_tabulatorium[3][explanation_method][3]
-    method = the_tabulatorium[3][explanation_method][0](**explanation_hyperparameters)
+    parameters = {
+        'explain_func': quantus.explain,
+        'method': the_tabulatorium[2][explanation_method][0],
+        'gc_layer': model.get_layer()
+    }
+    if parameters['method'] == 'GradCam' and parameters['gc_layer'] is None:
+        checkpoint = update_checkpoint(the_tabulatorium, 'evaluating', location)
+        return checkpoint
 
     # evaluate
-    explanation_hyperparameters = the_tabulatorium[3][explanation_method][3]
     scores = the_tabulatorium[3][metric][0](**metric_hyperparameters)(
         model=model,
-        x_batch=images.detach().numpy(),
-        y_batch=labels.detach().numpy(),
-        explain_func=method,
-        **explanation_hyperparameters
+        x_batch=numpy.array(images.detach()),
+        y_batch=numpy.array(labels.detach()),
+        a_batch=None,
+        **parameters
     )
-    the_tabulatorium[6][architecture][dataset][explanation_method][metric][version] = scores
+    the_tabulatorium[5][architecture][dataset][explanation_method][metric][version] = scores
 
     # update checkpoint
     checkpoint = update_checkpoint(the_tabulatorium, 'evaluating', location)
@@ -219,7 +235,7 @@ def make_model(
     :param the_tabulatorium: table containing all relevant information
     :param architecture: location of the model architecture in the_tabulatorium[0]
     :param dataset: location of the dataset it was trained on in the_tabulatorium[1]
-    :param version: location of the intermediate version in the tabulatorium[5][architecture][dataset]
+    :param version: location of the intermediate version in the tabulatorium[4][architecture][dataset]
 
     :return: the initialized neural network
     """
@@ -264,9 +280,9 @@ def update_checkpoint(
         elif explanation_method < len(the_tabulatorium[2]) - 1:
             checkpoint = ['evaluating', [architecture, dataset, explanation_method + 1, 0, 0]]
         elif dataset < len(the_tabulatorium[1]) - 1:
-            checkpoint = ['evaluation', [architecture, dataset + 1, 0, 0, 0]]
+            checkpoint = ['evaluating', [architecture, dataset + 1, 0, 0, 0]]
         elif architecture < len(the_tabulatorium[0]) - 1:
-            checkpoint = ['evaluation', [architecture + 1, 0, 0, 0, 0]]
+            checkpoint = ['evaluating', [architecture + 1, 0, 0, 0, 0]]
         else:
             checkpoint = ['done', []]
     else:
