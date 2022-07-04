@@ -7,29 +7,45 @@ import TSNE
 """
 second test
 """
-path = 'three_accuracies_one_dataset_twenty_models.pt'
-t = torch.load(path)[0]
+# path = 'three_accuracies_one_dataset_twenty_models.pt'
+# t = torch.load(path)[0]
 
-# compute average avg sensitivity for 60%,70%,80%
+# # complexity histogram for 60%, 70% and 80%
+# t[2][3][0], t[2][4][0] = t[2][4][0], t[2][3][0]
+# for i in range(20):
+#     t[5][i][0][3], t[5][i][0][4] = t[5][i][0][4], t[5][i][0][3]
+# figure, axes = plt.subplots(1, 5, figsize=(16, 3), constrained_layout=True)
+# for k in range(5):
+#     X60 = [numpy.mean(t[5][i][0][k][5][0]) for i in range(20)]
+#     X70 = [numpy.mean(t[5][i][0][k][5][1]) for i in range(20)]
+#     X80 = [numpy.mean(t[5][i][0][k][5][2]) for i in range(20)]
+#     axes[k].hist(X60, label='60%')
+#     axes[k].hist(X70, label='70%')
+#     axes[k].hist(X80, label='80%')
+#     axes[k].set_title(t[2][k][0])
+# axes[-1].legend()
+# plt.savefig('20models_3versions-complexity.png')
+# plt.show()
 
-t[2][3][0], t[2][4][0] = t[2][4][0], t[2][3][0]
-for i in range(20):
-    t[5][i][0][3], t[5][i][0][4] = t[5][i][0][4], t[5][i][0][3]
-figure, axes = plt.subplots(1, 5, figsize=(16, 3), constrained_layout=True)
-for k in range(5):
-    X = [[], []]
-    for i in range(20):
-        for j in range(3):
-            X[0].append(numpy.log(numpy.array([numpy.mean([t[5][i][0][k][0][j]]), numpy.mean([t[5][i][0][k][1][j]])])))
-            X[1].append(t[4][i][0][j][1])
-    X[0] = numpy.array(X[0])
-    X[1] = numpy.array(X[1])
-    axes[k].scatter(X[0][:, 0], X[0][:, 1], c=X[1], cmap='winter')
-    axes[k].set_xlabel('log-Sensitivity')
-    axes[k].set_ylabel('log-Infidelity')
-    axes[k].set_title(t[2][k][0])
-plt.savefig('20models_3versions-sensitivity-infidelity.png')
-plt.show()
+# # avg sensitivity vs infidelity
+# t[2][3][0], t[2][4][0] = t[2][4][0], t[2][3][0]
+# for i in range(20):
+#     t[5][i][0][3], t[5][i][0][4] = t[5][i][0][4], t[5][i][0][3]
+# figure, axes = plt.subplots(1, 5, figsize=(16, 3), constrained_layout=True)
+# for k in range(5):
+#     X = [[], []]
+#     for i in range(20):
+#         for j in range(3):
+#             X[0].append(numpy.log(numpy.array([numpy.mean([t[5][i][0][k][0][j]]), numpy.mean([t[5][i][0][k][1][j]])])))
+#             X[1].append(t[4][i][0][j][1])
+#     X[0] = numpy.array(X[0])
+#     X[1] = numpy.array(X[1])
+#     axes[k].scatter(X[0][:, 0], X[0][:, 1], c=X[1], cmap='winter')
+#     axes[k].set_xlabel('log-Sensitivity')
+#     axes[k].set_ylabel('log-Infidelity')
+#     axes[k].set_title(t[2][k][0])
+# plt.savefig('20models_3versions-sensitivity-infidelity.png')
+# plt.show()
 
 # # geometric visualisation of models
 # # create vectors containing all model parameters (1d) and 'label' accuracy
