@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 import numpy
 from captum import attr
 
-from model_training import training
+from model_training import training, training_2
 
 
 def initialize(
@@ -127,7 +127,7 @@ def train(
           f'Dataset: {the_tabulatorium[1][dataset][1]}')
 
     # train
-    intermediate_versions = training(
+    intermediate_versions = training_2(
         model=the_tabulatorium[0][architecture][0](),
         dataset=the_tabulatorium[1][dataset][0],
         **hyperparameters
@@ -192,7 +192,7 @@ def evaluate(
             download=True,
             transform=ToTensor()
         ),
-        batch_size=10,
+        batch_size=50,
         shuffle=False
     )
     images, labels = iter(dataloader_evaluate).next()

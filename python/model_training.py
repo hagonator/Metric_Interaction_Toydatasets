@@ -69,7 +69,7 @@ def training(
 
     print("--------------------------------------------------")
     while round(accuracy, 2) < goal_accuracy and plateau <= patience:
-        print(f"Epoch {epoch:>3d} | Starting Accuracy {100*accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
+        print(f"Epoch {epoch:>3d} | Starting Accuracy {100 * accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
         print("--------------------------------------------------")
         epoch += 1
         loop_train(model, dataloader_training, loss_function, optimizer)
@@ -80,7 +80,7 @@ def training(
             model_versions.append([deepcopy(model.state_dict()), accuracy])
         else:
             plateau += 1
-    print(f"Epochs {epoch:>3d} | Final Accuracy {100*accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
+    print(f"Epochs {epoch:>3d} | Final Accuracy {100 * accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
 
     return model_versions
 
@@ -145,3 +145,59 @@ def loop_test(
     correct /= size
 
     return correct
+
+
+def training_2(
+        model: nn.Module,
+        dataset: torchvision.datasets,
+        batch_size_training: int,
+        batch_size_testing: int,
+        loss_function: functional,
+        goal_accuracies: torch.tensor,
+        learning_rate: float,
+) -> list:
+    if torch.cuda.is_available():
+        device = 'cuda'
+    else:
+        device = 'cpu'
+    model.to(device)
+
+    loss_function = loss_function()
+
+    dataloader_training = DataLoader(
+        dataset=dataset(
+            root='data',
+            train=True,
+            download=True,
+            transform=ToTensor()
+        ),
+        batch_size=batch_size_training,
+        shuffle=True
+    )
+    dataloader_testing = DataLoader(
+        dataset=dataset(
+            root='data',
+            train=False,
+            download=True,
+            transform=ToTensor()
+        ),
+        batch_size=batch_size_testing,
+        shuffle=True
+    )
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    accuracy = loop_test(model, dataloader_testing)
+    epoch = 1
+    model_versions = []
+    for target_accuracy in goal_accuracies:
+        print("--------------------------------------------------")
+        while round(accuracy, 2) < target_accuracy:
+            print(f"Epoch {epoch:>3d} | Starting Accuracy {100 * accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
+            print("--------------------------------------------------")
+            epoch += 1
+            loop_train(model, dataloader_training, loss_function, optimizer)
+            print("--------------------------------------------------")
+            accuracy = loop_test(model, dataloader_testing)
+        print(f"Epochs {epoch:>3d} | Final Accuracy {100 * accuracy:>4.1f}% | Versions {len(model_versions):>3d}")
+        model_versions.append([deepcopy(model.state_dict()), accuracy])
+
+    return model_versions

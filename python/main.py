@@ -4,10 +4,17 @@ from utils import initialize, generate
 from experimental_setup \
     import table_model_architectures, table_datasets, table_explanation_methods, table_evaluation_metrics
 
-path = 'test2.pt'
-generate(path)
+path = 'three_accuracies_one_dataset_twenty_models.pt'
+# generate(path)
 # t, check = torch.load(path)
-# torch.save([t, ['evaluating', [1, 1, 5, 0, 0]]], path)
+# print(check)
+# t[3] = table_evaluation_metrics
+# for i in range(20):
+#     for j in range(6):
+#         t[5][i][0][j] = t[5][i][0][j][1:]
+#
+# print(len(t[5][0][0][0]))
+# torch.save([t, check], path)
 
 # initialize(
 #     path=path,
